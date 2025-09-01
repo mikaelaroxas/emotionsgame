@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guess the Emotion!</title>
+  <style>
+    body {
+      background-color: #f2f7ff;
+      font-family: "Comic Sans MS", sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      color: #2c3e50;
+      margin: 20px 0;
+    }
+    #score {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    #notification {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 10px 0;
+      min-height: 24px;
+    }
+    #image-container {
+      background-color: white;
+      display: inline-block;
+      padding: 10px;
+      border: 4px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    #buttons-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .emotion-btn {
+      font-size: 14px;
+      font-weight: bold;
+      width: 100px;
+      height: 35px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #controls {
+      margin-bottom: 20px;
+    }
+    .control-btn {
+      font-size: 14px;
+      font-weight: bold;
+      width: 120px;
+      height: 40px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎭 Guess the Emotion! 🎭</h1>
+  <div id="score">Score: 0</div>
+  <div id="notification"></div>
+  <div id="image-container">
+    <img id="emotion-image" src="" width="150" height="150" alt="Emotion">
+  </div>
+
+  <div id="buttons-container"></div>
+
+  <div id="controls">
+    <button class="control-btn" id="new-game-btn" style="background-color:#a0c4ff;">🔄 New Game</button>
+    <button class="control-btn" id="next-round-btn" style="background-color:#bdb2ff;">⏭ Next Round</button>
+  </div>
+
+  <script>
+    const emotions = ["happy","sad","surprised","angry","shy","scared","tired","excited"];
+    const buttonColors = ["#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff","#ffc6ff"];
+
+    let currentEmotion = null;
+    let score = 0;
+    let guessedEmotions = new Set();
+
+    const scoreLabel = document.getElementById("score");
+    const notification = document.getElementById("notification");
+    const imageElem = document.getElementById("emotion-image");
+    const buttonsContainer = document.getElementById("buttons-container");
+    const newGameBtn = document.getElementById("new-game-btn");
+    const nextRoundBtn = document.getElementById("next-round-btn");
+
+    // Shuffle array
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    // Start a new round
+    function nextRound() {
+      const remaining = emotions.filter(e => !guessedEmotions.has(e));
+      if (remaining.length === 0) {
+        notification.textContent = `🎉 Congratulations! You guessed all emotions! Final Score: ${score}`;
+        buttonsContainer.querySelectorAll("button").forEach(b => b.disabled = true);
+        return;
+      }
+      currentEmotion = remaining[Math.floor(Math.random() * remaining.length)];
+      imageElem.src = `images/${currentEmotion}.png`; // put images in /images folder
+
+      notification.textContent = "";
+
+      // Shuffle buttons
+      const shuffled = shuffleArray([...emotions]);
+      buttonsContainer.innerHTML = "";
+      shuffled.forEach((emotion, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+        btn.className = "emotion-btn";
+        btn.style.backgroundColor = buttonColors[index];
+        btn.onclick = () => checkAnswer(emotion);
+        btn.disabled = false;
+        buttonsContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(choice) {
+      if (choice === currentEmotion) {
+        score++;
+        guessedEmotions.add(currentEmotion);
+        notification.textContent = `✅ Correct! The answer is ${currentEmotion.charAt(0).toUpperCase() + currentEmotion.slice(1)}!`;
+        notification.style.color = "green";
+      } else {
+        notification.textContent = `❌ Oops! The answer is ${currentEmotion.charAt(0).toUpperCase() + currentEmotion.slice(1)}.`;
+        notification.style.color = "red";
+      }
+      scoreLabel.textContent = `Score: ${score}`;
+      setTimeout(nextRound, 800);
+    }
+
+    function newGame() {
+      score = 0;
+      guessedEmotions.clear();
+      scoreLabel.textContent = `Score: ${score}`;
+      nextRound();
+    }
+
+    newGameBtn.onclick = newGame;
+    nextRoundBtn.onclick = nextRound;
+
+    // Start first round
+    nextRound();
+  </script>
+
+</body>
+</html>
